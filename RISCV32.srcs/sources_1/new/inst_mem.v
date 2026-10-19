@@ -82,9 +82,9 @@ module inst_mem (
         rom[40] = 32'h01180463; // beq x16, x17, 8   (True: Jump to PC+8)
         rom[41] = 32'hdeadb0b7; // lui x1, 0xdeadb   (Poison: Should be skipped)
         rom[42] = 32'h00181893; // slli x17, x16, 1  (Landing Site)
-        rom[43] = 32'h00a000ef; // jal x1, 10        (Jump forward, save PC in x1)
+        rom[43] = 32'h008000ef; // jal x1, 8         (Jump forward, save PC in x1)
         rom[44] = 32'hdeadb0b7; // lui x1, 0xdeadb   (Poison: Should be skipped)
-        rom[45] = 32'h00008067; // jalr x0, 0(x1)    (Return jump)
+        rom[45] = 32'h00808067; // jalr x0, 8(x1)    (Return jump)
 
         rom[46] = 32'h0000006f; // jal x0, 0         (Infinite Loop/Trap)
     end

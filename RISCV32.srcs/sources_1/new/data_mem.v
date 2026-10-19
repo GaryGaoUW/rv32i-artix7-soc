@@ -38,13 +38,14 @@ module data_mem (
     end
 
     assign rdata = ram[addr[31:2]];
+    wire [31:0] shifted_wdata = wdata << {addr[1:0], 3'b000};
 
     always @(posedge clk) begin
         if (we) begin
-            if (we[0]) ram[addr[31:2]][7:0] <= wdata[7:0];
-            if (we[1]) ram[addr[31:2]][15:8] <= wdata[15:8];
-            if (we[2]) ram[addr[31:2]][23:16] <= wdata[23:16];
-            if (we[3]) ram[addr[31:2]][31:24] <= wdata[31:24];
+            if (we[0]) ram[addr[31:2]][7:0] <= shifted_wdata[7:0];
+            if (we[1]) ram[addr[31:2]][15:8] <= shifted_wdata[15:8];
+            if (we[2]) ram[addr[31:2]][23:16] <= shifted_wdata[23:16];
+            if (we[3]) ram[addr[31:2]][31:24] <= shifted_wdata[31:24];
         end
     end
 endmodule

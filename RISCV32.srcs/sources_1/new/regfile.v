@@ -34,6 +34,7 @@ module regfile (
 );
 
     reg [31:0] regs[0:31];
+    integer i;
 
     assign rdata1 = (raddr1 == 5'b00000) ? 32'h00000000 : regs[raddr1];
     assign rdata2 = (raddr2 == 5'b00000) ? 32'h00000000 : regs[raddr2];
@@ -41,6 +42,9 @@ module regfile (
     always @(posedge clk) begin
         if (!rst_n) begin
             // Do nothing. Supposed to clean up the regs, 
+            for(i = 0; i < 32; i = i + 1) begin
+                regs[i] <= 32'h00000000;
+            end
         end else begin
             if (we == 1'b1 && waddr != 5'b00000) begin
                 regs[waddr] <= wdata;

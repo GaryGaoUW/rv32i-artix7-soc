@@ -57,7 +57,8 @@ module core_top (
     // 1. IF Stage
     // pc_sel=1 when branch taken, next_pc=alu_res (branch target), 
     // else next_pc=pc_wire+4
-    assign next_pc = (pc_sel) ? alu_res : (pc_wire + 4);
+    // (alu_res & ~32'd1) using to ensure the least significant bit is 0 for word alignment
+    assign next_pc = (pc_sel) ? (alu_res & ~32'd1) : (pc_wire + 4);
 
     pc_reg u_pc (
         .clk   (clk),
