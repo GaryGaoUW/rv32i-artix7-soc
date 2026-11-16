@@ -42,16 +42,16 @@ module data_mem (
     // Write logic with byte enables
     // we[0] controls byte 0 (bits 7:0), we[1] controls byte 1 (bits 15:8), etc.
     // This allows for byte, half-word, and word writes based on the write Enable(we) signal.
+    wire [9:0] ram_addr = addr[11:2];
     always @(posedge clk) begin
-        if (we) begin
-            if (we[0]) ram[addr[31:2]][7:0] <= wdata[7:0];
-            if (we[1]) ram[addr[31:2]][15:8] <= wdata[15:8];
-            if (we[2]) ram[addr[31:2]][23:16] <= wdata[23:16];
-            if (we[3]) ram[addr[31:2]][31:24] <= wdata[31:24];
-        end
+
+        if (we[0]) ram[ram_addr][7:0] <= wdata[7:0];
+        if (we[1]) ram[ram_addr][15:8] <= wdata[15:8];
+        if (we[2]) ram[ram_addr][23:16] <= wdata[23:16];
+        if (we[3]) ram[ram_addr][31:24] <= wdata[31:24];
 
         // Synchronous read (1 clock cycle latency)
-        rdata <= ram[addr[31:2]];
+        rdata <= ram[ram_addr];
 
         // Note 1:
         // Chop the lowest 2 bits to get the word-aligned address index
@@ -60,16 +60,17 @@ module data_mem (
         // so we have to divide addr by 4, same as addr[31:2].
 
         // Note 2:
-        // Don't need to worry about the read/write conflict in the same cycle 
-        // because the synthesizer will handle it by giving priority to the write operation, 
-        // So write-first
+        // With non-blocking assignments in the same always block, a same-cycle
+        // read of a written address returns the OLD value (read-first behavior).
+        // This never matters here: only one instruction occupies MEM per cycle,
+        // and a store followed by a load to the same address commits its write
+        // one full cycle before the load's read data is registered.
 
         // Note 3:
-        // No need to change anything for the load-use hazard in hazard detection unit, 
-        // because the load-use hazard will stall the pipeline for 1 cycle, 
-        // due to the hold-up time of the changes in address, the BRAM will read the NOP data in the next cycle
-        // even though the n+2 cycle BRAM will output the data from 0x00000000(NOP), 
-        // but the stall already set the write enable to 0, so the data in BRAM will not be overwritten
-        // "In Digital IC, it's fine if the bus carries trash, but it's a nightmare if the control logic has a glitch."
+        // Because rdata is registered (BRAM behavior), the read data belongs to
+        // the address presented in the PREVIOUS cycle, i.e. the load instruction
+        // that has meanwhile moved on to WB. That's why the load byte/half-word
+        // extraction is done in the WB stage with the load's own registered
+        // controls (see core_top / pipe_mem_wb).
     end
 endmodule
